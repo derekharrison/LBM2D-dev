@@ -3,6 +3,11 @@
  *
  *  Created on: Apr 2, 2019
  *      Author: d-w-h
+ *
+ *      Implementation of the LBM.
+ *      A simulation of the interaction of a fluid
+ *      and a solid cylindrical object moving with
+ *      a specified velocity.
  */
 
 #include <iostream>
@@ -28,10 +33,9 @@ int main(int argc, char* argv[])
     int max_timesteps, timestep;
     double dt, tau, dt_tau, dx;
     double x_x, x_y, box_nx, box_ny, radius;
-    double omega_z, ux, uy, I, m, px, py;
+    double ux, uy, px, py;
     int size_box;
     std::map<int, int> index_map;
-
 
     Nx = 100;
     Ny = 100;
@@ -43,7 +47,6 @@ int main(int argc, char* argv[])
     tau = 0.6;
 
     radius = 6.0;
-    m = 1.0;
 
     x_x = 50;
     x_y = 90;
@@ -51,10 +54,8 @@ int main(int argc, char* argv[])
     uy = 0.0;
     px = 0.0;
     py = 0.0;
-    omega_z = 0.0;
     size_box = radius/dx + 3;
     dt_tau = dt/tau;
-    I = 0.5*m*radius*radius;
 
     /*Memory allocation*/
     double*** fi     = allocate_discrete_velocity_2D(Nx, Ny, Nd);
@@ -287,7 +288,6 @@ int main(int argc, char* argv[])
 
         /*Streaming solid boundary nodes*/
         int n_nodes = adj_node_counter;
-        double del_omega_z = 0.0;
         double del_px = 0.0;
         double del_py = 0.0;
         for(int n = 0; n < n_nodes; ++n) {
@@ -297,196 +297,18 @@ int main(int argc, char* argv[])
             i = adj_nodes[n].i;
             j = adj_nodes[n].j;
 
-            //east node solid, 1
-            is = i + 1;
-            js = j;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] + 0.5*dx - x_x;
-                ry = Y[i][j] - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][3] = fi[i][j][1] - 2*wi[1]*rho[i][j]*3.0*(cix[1]*uwx + ciy[1]*uwy);
-
-                delpx = cix[1]*fiprop[i][j][1] - cix[3]*fi[i][j][3];
-                delpy = ciy[1]*fiprop[i][j][1] - ciy[3]*fi[i][j][3];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //west node solid, 2
-            is = i - 1;
-            js = j;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] - 0.5*dx - x_x;
-                ry = Y[i][j] - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][1] = fi[i][j][3] - 2*wi[3]*rho[i][j]*3.0*(cix[3]*uwx + ciy[3]*uwy);
-
-                delpx = cix[3]*fiprop[i][j][3] - cix[1]*fi[i][j][1];
-                delpy = ciy[3]*fiprop[i][j][3] - ciy[1]*fi[i][j][1];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //north node solid, 3
-            is = i;
-            js = j + 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] - x_x;
-                ry = Y[i][j] + 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][4] = fi[i][j][2] - 2*wi[2]*rho[i][j]*3.0*(cix[2]*uwx + ciy[2]*uwy);
-
-                delpx = cix[2]*fiprop[i][j][2] - cix[4]*fi[i][j][4];
-                delpy = ciy[2]*fiprop[i][j][2] - ciy[4]*fi[i][j][4];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //south node solid, 4
-            is = i;
-            js = j - 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] - x_x;
-                ry = Y[i][j] - 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][2] = fi[i][j][4] - 2*wi[4]*rho[i][j]*3.0*(cix[4]*uwx + ciy[4]*uwy);
-
-                delpx = cix[4]*fiprop[i][j][4] - cix[2]*fi[i][j][2];
-                delpy = ciy[4]*fiprop[i][j][4] - ciy[2]*fi[i][j][2];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //north-east node solid, 5
-            is = i + 1;
-            js = j + 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] + 0.5*dx - x_x;
-                ry = Y[i][j] + 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][7] = fi[i][j][5] - 2*wi[5]*rho[i][j]*3.0*(cix[5]*uwx + ciy[5]*uwy);
-
-                delpx = cix[5]*fiprop[i][j][5] - cix[7]*fi[i][j][7];
-                delpy = ciy[5]*fiprop[i][j][5] - ciy[7]*fi[i][j][7];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //north-west node solid, 6
-            is = i - 1;
-            js = j + 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] - 0.5*dx - x_x;
-                ry = Y[i][j] + 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][8] = fi[i][j][6] - 2*wi[6]*rho[i][j]*3.0*(cix[6]*uwx + ciy[6]*uwy);
-
-                delpx = cix[6]*fiprop[i][j][6] - cix[8]*fi[i][j][8];
-                delpy = ciy[6]*fiprop[i][j][6] - ciy[8]*fi[i][j][8];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //south-west node solid, 7
-            is = i - 1;
-            js = j - 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] - 0.5*dx - x_x;
-                ry = Y[i][j] - 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][5] = fi[i][j][7] - 2*wi[7]*rho[i][j]*3.0*(cix[7]*uwx + ciy[7]*uwy);
-
-                delpx = cix[7]*fiprop[i][j][7] - cix[5]*fi[i][j][5];
-                delpy = ciy[7]*fiprop[i][j][7] - ciy[5]*fi[i][j][5];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
-            }
-
-            //south-east node solid, 8
-            is = i + 1;
-            js = j - 1;
-            hit_solid = solid_flags[is][js];
-            if(hit_solid) {
-                double uwx, uwy, rx, ry;
-                double delpx, delpy;
-
-                rx = X[i][j] + 0.5*dx - x_x;
-                ry = Y[i][j] - 0.5*dx - x_y;
-
-                uwx = ux - omega_z*ry;
-                uwy = uy + omega_z*rx;
-
-                fiprop[i][j][6] = fi[i][j][8] - 2*wi[8]*rho[i][j]*3.0*(cix[8]*uwx + ciy[8]*uwy);
-
-                delpx = cix[8]*fiprop[i][j][8] - cix[6]*fi[i][j][6];
-                delpy = ciy[8]*fiprop[i][j][8] - ciy[6]*fi[i][j][6];
-
-                del_px += delpx;
-                del_py += delpy;
-                del_omega_z += (1.0/I) * (delpx*rx - delpy*ry);
+            for(int nd = 1; nd < 10; ++nd) {
+                is = i - cix[nd];
+                js = j - ciy[nd];
+                hit_solid = solid_flags[is][js];
+                if(hit_solid) {
+                    double delpx, delpy;
+                    fiprop[i][j][nd] = fi[i][j][index_map[nd]] - 2*wi[index_map[nd]]*rho[i][j]*3.0*(cix[index_map[nd]]*ux + ciy[index_map[nd]]*uy);
+                    delpx = cix[index_map[nd]]*fiprop[i][j][index_map[nd]] - cix[nd]*fi[i][j][nd];
+                    delpy = ciy[index_map[nd]]*fiprop[i][j][index_map[nd]] - ciy[nd]*fi[i][j][nd];
+                    del_px += delpx;
+                    del_py += delpy;
+                }
             }
         }
 
