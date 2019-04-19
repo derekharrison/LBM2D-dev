@@ -608,12 +608,25 @@ int main(int argc, char* argv[])
 
         Fr = Fm + Fy;
 
-        x_x = x_x + 0.5 * Fx/m * dt*dt;
-        x_y = x_y + 0.5 * Fr/m * dt*dt;
-
+//        x_x = x_x + 0.5 * Fx/m * dt*dt;
+//        x_y = x_y + 0.5 * Fr/m * dt*dt;
+//
         omega_z = omega_z + del_omega_z;
 
+        ux = 0.0;
+        uy = -0.25;
+        x_y = x_y + uy*dt;
+
         timestep++;
+
+//        printf("px: %f\tpy: %f\n", px, py);
+//        printf("del_px: %f\tdel_py: %f\n", del_px, del_py);
+        printf("x_x: %f\tx_y: %f\n", x_x, x_y);
+        printf("ux: %f\tuy: %f\n", ux, uy);
+        printf("del_px: %f\tdel_py: %f\n", del_px, del_py);
+        printf("num solid nodes: %i\n", num_solid_nodes);
+        printf("num adj nodes: %i\n", adj_node_counter);
+//        printf("omega_z: %f\tdel_omega_z: %f\n", omega_z, del_omega_z);
 
     } while(timestep < max_timesteps);
     /*End LBM algorithm*/
@@ -625,7 +638,7 @@ int main(int argc, char* argv[])
     }
     printf("sum: %f\n", sum);
     /*Processing results*/
-    std::cout << "done bro!" << std::endl;
+    std::cout << "done" << std::endl;
 
     return 0;
 }
