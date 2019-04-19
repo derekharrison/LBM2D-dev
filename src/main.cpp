@@ -29,7 +29,6 @@ int main(int argc, char* argv[])
     double dt, tau, dt_tau, dx;
     double x_x, x_y, box_nx, box_ny, radius;
     double omega_z, ux, uy, I, m, px, py;
-    double Fx, Fy, Fm, Fr, g;
     int size_box;
     std::map<int, int> index_map;
 
@@ -53,7 +52,6 @@ int main(int argc, char* argv[])
     px = 0.0;
     py = 0.0;
     omega_z = 0.0;
-    g = -9.81;
     size_box = radius/dx + 3;
     dt_tau = dt/tau;
     I = 0.5*m*radius*radius;
@@ -88,8 +86,7 @@ int main(int argc, char* argv[])
     index_map.insert(std::pair <int, int> (8, 6));
 
     /*Initializing cij and wi*/
-    for(int i = 0; i < 27; ++i)
-    {
+    for(int i = 0; i < 27; ++i){
         cix[0] = 0; ciy[0] = 0; wi[0] = 4.0/9.0;
         cix[1] = 1; ciy[1] = 0; wi[1] = 1.0/9.0;
         cix[2] = 0; ciy[2] = 1; wi[2] = 1.0/9.0;
@@ -103,8 +100,7 @@ int main(int argc, char* argv[])
 
     /*Initializing density and velocity*/
     for(int i = 0; i < Nx; ++i)
-        for(int j = 0; j < Ny; ++j)
-        {
+        for(int j = 0; j < Ny; ++j) {
             Ux[i][j] = 0.0;
             Uy[i][j] = 0.0;
             vort_field[i][j] = 0.0;
@@ -118,8 +114,7 @@ int main(int argc, char* argv[])
     /*Initializing discrete velocity distributions*/
     for(int i = 0; i < Nx; ++i)
         for(int j = 0; j < Ny; ++j)
-            for(int d = 0; d < Nd; ++d)
-            {
+            for(int d = 0; d < Nd; ++d) {
                 fi[i][j][d] = wi[d]*rho[i][j];
                 fieq[i][j][d] = wi[d]*rho[i][j];
                 fiprop[i][j][d] = wi[d]*rho[i][j];
@@ -132,8 +127,7 @@ int main(int argc, char* argv[])
     {
         /*Calculate density and velocity*/
         for(int i = 0; i < Nx; ++i)
-            for(int j = 0; j < Ny; ++j)
-            {
+            for(int j = 0; j < Ny; ++j) {
                 rho[i][j] = 0.0;
                 Ux[i][j] = 0.0;
                 Uy[i][j] = 0.0;
@@ -149,10 +143,8 @@ int main(int argc, char* argv[])
 
         /*Calculate vorticity*/
         for(int i = 1; i < Nx - 1; ++i)
-            for(int j = 1; j < Ny - 1; ++j)
-            {
-                if(solid_flags[i][j] == 0)
-                {
+            for(int j = 1; j < Ny - 1; ++j) {
+                if(solid_flags[i][j] == 0) {
                     vort_field[i][j] = 0.5 * (Uy[i+1][j] - Uy[i-1][j] - Ux[i][j+1] + Ux[i][j-1]) * 1.0 / dx;
                 }
             }
@@ -165,40 +157,27 @@ int main(int argc, char* argv[])
         double dummy_val_vel = 0.0;
         double dummy_val_vort = 0.0;
         for(int i = 0; i < Nx; ++i)
-            for(int j = 0; j < Ny; ++j)
-            {
+            for(int j = 0; j < Ny; ++j) {
                 dummy_val_vel  = Ux[i][j] * Ux[i][j] + Uy[i][j] * Uy[i][j];
                 dummy_val_vort = vort_field[i][j] * vort_field[i][j];
 
                 if(Uy[i][j] > max_v_y)
-                {
                     max_v_y = Uy[i][j];
-                }
                 if(Uy[i][j] < min_v_y)
-                {
                     min_v_y = Uy[i][j];
-                }
-
 
                 if(dummy_val_vel > max_velocity)
-                {
                     max_velocity = dummy_val_vel;
-                }
-
                 if(dummy_val_vort > max_vorticity)
-                {
                     max_vorticity = dummy_val_vort;
-                }
             }
         max_velocity  = sqrt(max_velocity);
         max_vorticity = sqrt(max_vorticity);
 
         /*Calculate equilibrium distribution*/
         for(int i = 0; i < Nx; ++i)
-            for(int j = 0; j < Ny; ++j)
-            {
-                for(int d = 0; d < Nd; ++d)
-                {
+            for(int j = 0; j < Ny; ++j) {
+                for(int d = 0; d < Nd; ++d) {
                     double uci = cix[d]*Ux[i][j] + ciy[d]*Uy[i][j];
                     double uu = Ux[i][j]*Ux[i][j] + Uy[i][j]*Uy[i][j];
                     fieq[i][j][d] = wi[d]*rho[i][j]*(1.0 + 3.0*uci + 4.5*uci*uci - 1.5*uu);
@@ -207,21 +186,17 @@ int main(int argc, char* argv[])
 
         /*Collision*/
         for(int i = 0; i < Nx; ++i)
-            for(int j = 0; j < Ny; ++j)
-            {
-                for(int d = 0; d < Nd; ++d)
-                {
+            for(int j = 0; j < Ny; ++j) {
+                for(int d = 0; d < Nd; ++d) {
                     fi[i][j][d] = fiprop[i][j][d]*(1 - dt_tau) + fieq[i][j][d]*dt_tau;
                 }
             }
 
         /*Streaming internal nodes*/
         for(int i = 1; i < Nx - 1; ++i)
-            for(int j = 1; j < Ny - 1; ++j)
-            {
+            for(int j = 1; j < Ny - 1; ++j) {
                 bool is_fluid = solid_flags[i][j] == false;
-                if(is_fluid)
-                {
+                if(is_fluid) {
                     fiprop[i][j][0] = fi[i][j][0];
                     fiprop[i][j][1] = fi[i-1][j][1];
                     fiprop[i][j][2] = fi[i][j-1][2];
@@ -236,40 +211,32 @@ int main(int argc, char* argv[])
 
         /*Streaming south side*/
         for(int i = 0; i < Nx; ++i)
-            for(int d = 0; d < Nd; ++d)
-            {
-                if(ciy[d] == 1)
-                {
+            for(int d = 0; d < Nd; ++d) {
+                if(ciy[d] == 1) {
                     fiprop[i][0][d] = fi[i][0][index_map[d]];
                 }
             }
 
         /*Streaming north side*/
         for(int i = 0; i < Nx; ++i)
-            for(int d = 0; d < Nd; ++d)
-            {
-                if(ciy[d] == -1)
-                {
+            for(int d = 0; d < Nd; ++d) {
+                if(ciy[d] == -1) {
                     fiprop[i][Ny-1][d] = fi[i][Ny-1][index_map[d]];
                 }
             }
 
         /*Streaming west side*/
         for(int j = 0; j < Ny; ++j)
-            for(int d = 0; d < Nd; ++d)
-            {
-                if(cix[d] == 1)
-                {
+            for(int d = 0; d < Nd; ++d) {
+                if(cix[d] == 1) {
                     fiprop[0][j][d] = fi[0][j][index_map[d]];
                 }
             }
 
         /*Streaming east side*/
         for(int j = 0; j < Ny; ++j)
-            for(int d = 0; d < Nd; ++d)
-            {
-                if(cix[d] == -1)
-                {
+            for(int d = 0; d < Nd; ++d) {
+                if(cix[d] == -1) {
                     fiprop[Nx-1][j][d] = fi[Nx-1][j][index_map[d]];
                 }
             }
@@ -279,19 +246,16 @@ int main(int argc, char* argv[])
         box_ny = x_y/dx;
         int num_solid_nodes = 0;
         for(int i = box_nx - size_box; i <= (box_nx + size_box) && (i >= 0) && (i <= Nx - 1); ++i)
-            for(int j = box_ny - size_box; j <= (box_ny + size_box) && (j >= 0) && (j <= Ny - 1); ++j)
-            {
+            for(int j = box_ny - size_box; j <= (box_ny + size_box) && (j >= 0) && (j <= Ny - 1); ++j) {
                 double del_x, del_y, del_r;
                 del_x = i*dx + 0.5*dx - x_x;
                 del_y = j*dx + 0.5*dx - x_y;
                 del_r = sqrt(del_x*del_x + del_y*del_y);
-                if(del_r <= radius)
-                {
+                if(del_r <= radius) {
                     solid_flags[i][j] = true;
                     num_solid_nodes++;
                 }
-                else
-                {
+                else {
                     solid_flags[i][j] = false;
                 }
             }
@@ -303,24 +267,20 @@ int main(int argc, char* argv[])
             {
                 bool is_adjacent = false;
                 for(int ii = i - 1; (ii <= i + 1) && (ii >= 0) && (ii <= Nx - 1); ++ii)
-                    for(int jj = j - 1; (jj <= j + 1) && (jj >= 0) && (jj <= Ny - 1); ++jj)
-                    {
+                    for(int jj = j - 1; (jj <= j + 1) && (jj >= 0) && (jj <= Ny - 1); ++jj) {
                         bool hit_solid = (solid_flags[ii][jj] == true) && (solid_flags[i][j] == false);
-                        if(hit_solid)
-                        {
+                        if(hit_solid) {
                             is_adjacent = true;
                         }
                     }
-                if(is_adjacent)
-                {
+                if(is_adjacent) {
                     adj_nodes[adj_node_counter].i = i;
                     adj_nodes[adj_node_counter].j = j;
                     adj_node_counter++;
 
                     adj_flags[i][j] = 2; //for testing
                 }
-                else
-                {
+                else {
                     adj_flags[i][j] = 0; //for testing
                 }
             }
@@ -330,8 +290,7 @@ int main(int argc, char* argv[])
         double del_omega_z = 0.0;
         double del_px = 0.0;
         double del_py = 0.0;
-        for(int n = 0; n < n_nodes; ++n)
-        {
+        for(int n = 0; n < n_nodes; ++n) {
             int i, j, is, js;
             bool hit_solid = false;
 
@@ -342,8 +301,7 @@ int main(int argc, char* argv[])
             is = i + 1;
             js = j;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -367,8 +325,7 @@ int main(int argc, char* argv[])
             is = i - 1;
             js = j;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -392,8 +349,7 @@ int main(int argc, char* argv[])
             is = i;
             js = j + 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -417,8 +373,7 @@ int main(int argc, char* argv[])
             is = i;
             js = j - 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -442,8 +397,7 @@ int main(int argc, char* argv[])
             is = i + 1;
             js = j + 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -467,8 +421,7 @@ int main(int argc, char* argv[])
             is = i - 1;
             js = j + 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -492,8 +445,7 @@ int main(int argc, char* argv[])
             is = i - 1;
             js = j - 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -517,8 +469,7 @@ int main(int argc, char* argv[])
             is = i + 1;
             js = j - 1;
             hit_solid = solid_flags[is][js];
-            if(hit_solid)
-            {
+            if(hit_solid) {
                 double uwx, uwy, rx, ry;
                 double delpx, delpy;
 
@@ -542,8 +493,7 @@ int main(int argc, char* argv[])
         /*Write time dependent data*/
         FILE* params = NULL;
         params = fopen("parameters.txt", "w");
-        if(params != NULL)
-        {
+        if(params != NULL) {
             fprintf(params, "%i\n", Nx);
             fprintf(params, "%i\n", Ny);
             fprintf(params, "%i\n", timestep);
@@ -552,8 +502,7 @@ int main(int argc, char* argv[])
             fprintf(params,"%f\n", min_v_y * 1.05);
             fprintf(params,"%f\n", max_v_y * 1.05);
         }
-        else
-        {
+        else {
             printf("could not open file params\n");
             exit(2);
         }
@@ -561,13 +510,11 @@ int main(int argc, char* argv[])
 
         FILE* object_location = NULL;
         object_location = fopen("object_location.txt", "a");
-        if(object_location != NULL)
-        {
+        if(object_location != NULL) {
             fprintf(object_location,"%f    ", x_x);
             fprintf(object_location,"%f\n", x_y);
         }
-        else
-        {
+        else {
             printf("could not open file object_location\n");
             exit(2);
         }
@@ -580,11 +527,9 @@ int main(int argc, char* argv[])
 
         sprintf(file_name_complete, "%s_%d%s", file_name, timestep, file_name_suffix);
         data = fopen(file_name_complete, "w");
-        if(data != NULL)
-        {
+        if(data != NULL) {
             for(int j = Ny - 1;j >= 0 ; --j)
-                for(int i = 0;i < Nx; ++i)
-                {
+                for(int i = 0;i < Nx; ++i) {
                     fprintf(data,"%f    ", i*dx + 0.5*dx);
                     fprintf(data,"%f    ", j*dx + 0.5*dx);
                     fprintf(data,"%f    ", Ux[i][j]);
@@ -592,8 +537,7 @@ int main(int argc, char* argv[])
                     fprintf(data,"%f\n", vort_field[i][j]);
                 }
         }
-        else
-        {
+        else {
             printf("could not open file params\n");
             exit(2);
         }
@@ -601,12 +545,6 @@ int main(int argc, char* argv[])
 
         px = px + del_px;
         py = py + del_py;
-
-        Fx = del_px/dt;
-        Fy = del_py/dt;
-        Fm = m*g;
-
-        Fr = Fm + Fy;
 
         ux = 0.0;
         uy = -0.25;
@@ -624,11 +562,11 @@ int main(int argc, char* argv[])
     /*End LBM algorithm*/
 
     double sum = 0.0;
-    for(int d = 0; d < Nd; ++d)
-    {
+    for(int d = 0; d < Nd; ++d) {
         sum += fiprop[2][2][d];
     }
     printf("sum: %f\n", sum);
+
     /*Processing results*/
     std::cout << "done" << std::endl;
 
