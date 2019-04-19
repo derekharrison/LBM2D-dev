@@ -146,31 +146,6 @@ int main(int argc, char* argv[])
                 }
             }
 
-        /*Calculate max velocity and vorticity*/
-        double max_v_y = 0.0;
-        double min_v_y = 1.0;
-        double max_velocity = 0.0;
-        double max_vorticity = 0.0;
-        double dummy_val_vel = 0.0;
-        double dummy_val_vort = 0.0;
-        for(int i = 0; i < Nx; ++i)
-            for(int j = 0; j < Ny; ++j) {
-                dummy_val_vel  = Ux[i][j] * Ux[i][j] + Uy[i][j] * Uy[i][j];
-                dummy_val_vort = vort_field[i][j] * vort_field[i][j];
-
-                if(Uy[i][j] > max_v_y)
-                    max_v_y = Uy[i][j];
-                if(Uy[i][j] < min_v_y)
-                    min_v_y = Uy[i][j];
-
-                if(dummy_val_vel > max_velocity)
-                    max_velocity = dummy_val_vel;
-                if(dummy_val_vort > max_vorticity)
-                    max_vorticity = dummy_val_vort;
-            }
-        max_velocity  = sqrt(max_velocity);
-        max_vorticity = sqrt(max_vorticity);
-
         /*Calculate equilibrium distribution*/
         for(int i = 0; i < Nx; ++i)
             for(int j = 0; j < Ny; ++j) {
@@ -301,6 +276,31 @@ int main(int argc, char* argv[])
                 }
             }
         }
+
+        /*Calculate max velocity and vorticity*/
+        double max_v_y = 0.0;
+        double min_v_y = 1.0;
+        double max_velocity = 0.0;
+        double max_vorticity = 0.0;
+        double dummy_val_vel = 0.0;
+        double dummy_val_vort = 0.0;
+        for(int i = 0; i < Nx; ++i)
+            for(int j = 0; j < Ny; ++j) {
+                dummy_val_vel  = Ux[i][j] * Ux[i][j] + Uy[i][j] * Uy[i][j];
+                dummy_val_vort = vort_field[i][j] * vort_field[i][j];
+
+                if(Uy[i][j] > max_v_y)
+                    max_v_y = Uy[i][j];
+                if(Uy[i][j] < min_v_y)
+                    min_v_y = Uy[i][j];
+
+                if(dummy_val_vel > max_velocity)
+                    max_velocity = dummy_val_vel;
+                if(dummy_val_vort > max_vorticity)
+                    max_vorticity = dummy_val_vort;
+            }
+        max_velocity  = sqrt(max_velocity);
+        max_vorticity = sqrt(max_vorticity);
 
         /*Write time dependent data*/
         FILE* params = NULL;
