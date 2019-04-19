@@ -20,11 +20,7 @@
 #include <string>
 
 #include "../inc/memory_operations.hpp"
-
-typedef struct node_coordinates {
-    int i;
-    int j;
-} nd_crdnts;
+#include "../inc/user.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -293,10 +289,8 @@ int main(int argc, char* argv[])
         for(int n = 0; n < n_nodes; ++n) {
             int i, j, is, js;
             bool hit_solid = false;
-
             i = adj_nodes[n].i;
             j = adj_nodes[n].j;
-
             for(int nd = 1; nd < 10; ++nd) {
                 is = i - cix[nd];
                 js = j - ciy[nd];
