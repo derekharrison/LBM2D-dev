@@ -373,12 +373,6 @@ int main(int argc, char* argv[])
     } while(timestep < max_timesteps);
     /*End LBM algorithm*/
 
-    double sum = 0.0;
-    for(int d = 0; d < Nd; ++d) {
-        sum += fiprop[2][2][d];
-    }
-    printf("sum: %f\n", sum);
-
     /*Processing results*/
     std::cout << "done" << std::endl;
 
