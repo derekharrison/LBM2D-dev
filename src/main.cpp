@@ -274,12 +274,8 @@ int main(int argc, char* argv[])
                     adj_nodes[adj_node_counter].i = i;
                     adj_nodes[adj_node_counter].j = j;
                     adj_node_counter++;
-
-                    adj_flags[i][j] = 2; //for testing
                 }
-                else {
-                    adj_flags[i][j] = 0; //for testing
-                }
+                else {};
             }
 
         /*Streaming solid boundary nodes*/
