@@ -120,6 +120,12 @@ int main(int argc, char* argv[])
 
     /*LBM algorithm*/
     timestep = 0;
+    double max_v_y = 0.0;
+    double min_v_y = 1000.0;
+    double max_v_x = 0.0;
+    double min_v_x = 1000.0;
+    double max_velocity = 0.0;
+    double max_vorticity = 0.0;
     do
     {
         /*Calculate density and velocity*/
@@ -229,7 +235,7 @@ int main(int argc, char* argv[])
                 if(cix[d] == -1) {
                     fiprop[Nx-1][j][d] = fi[Nx-1][j][index_map[d]];
                 }
-                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && cix[d] != 1) {
+                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && cix[d] != -1) {
                     fiprop[Nx-1][j][d] = fi[ir][jr][d];
                 }
             }
@@ -299,26 +305,27 @@ int main(int argc, char* argv[])
         }
 
         /*Calculate max velocity and vorticity*/
-        double max_v_y = 0.0;
-        double min_v_y = 1.0;
-        double max_velocity = 0.0;
-        double max_vorticity = 0.0;
-        double dummy_val_vel = 0.0;
-        double dummy_val_vort = 0.0;
+        double dummy_vel = 0.0;
+        double dummy_vort = 0.0;
         for(int i = 0; i < Nx; ++i)
             for(int j = 0; j < Ny; ++j) {
-                dummy_val_vel  = Ux[i][j] * Ux[i][j] + Uy[i][j] * Uy[i][j];
-                dummy_val_vort = vort_field[i][j] * vort_field[i][j];
+                dummy_vel  = Ux[i][j] * Ux[i][j] + Uy[i][j] * Uy[i][j];
+                dummy_vort = vort_field[i][j] * vort_field[i][j];
 
                 if(Uy[i][j] > max_v_y)
                     max_v_y = Uy[i][j];
                 if(Uy[i][j] < min_v_y)
                     min_v_y = Uy[i][j];
 
-                if(dummy_val_vel > max_velocity)
-                    max_velocity = dummy_val_vel;
-                if(dummy_val_vort > max_vorticity)
-                    max_vorticity = dummy_val_vort;
+                if(Ux[i][j] > max_v_x)
+                    max_v_x = Ux[i][j];
+                if(Ux[i][j] < min_v_x)
+                    min_v_x = Ux[i][j];
+
+                if(dummy_vel > max_velocity)
+                    max_velocity = dummy_vel;
+                if(dummy_vort > max_vorticity)
+                    max_vorticity = dummy_vort;
             }
         max_velocity  = sqrt(max_velocity);
         max_vorticity = sqrt(max_vorticity);
