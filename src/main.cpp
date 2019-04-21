@@ -184,32 +184,56 @@ int main(int argc, char* argv[])
         /*Streaming south side*/
         for(int i = 0; i < Nx; ++i)
             for(int d = 0; d < Nd; ++d) {
+                int ir, jr;
+                ir = i - cix[d];
+                jr = - ciy[d];
                 if(ciy[d] == 1) {
                     fiprop[i][0][d] = fi[i][0][index_map[d]];
+                }
+                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && ciy[d] != 1) {
+                    fiprop[i][0][d] = fi[ir][jr][d];
                 }
             }
 
         /*Streaming north side*/
         for(int i = 0; i < Nx; ++i)
             for(int d = 0; d < Nd; ++d) {
+                int ir, jr;
+                ir = i - cix[d];
+                jr = Ny - 1 - ciy[d];
                 if(ciy[d] == -1) {
                     fiprop[i][Ny-1][d] = fi[i][Ny-1][index_map[d]];
+                }
+                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && ciy[d] != -1) {
+                    fiprop[i][Ny-1][d] = fi[ir][jr][d];
                 }
             }
 
         /*Streaming west side*/
         for(int j = 0; j < Ny; ++j)
             for(int d = 0; d < Nd; ++d) {
+                int ir, jr;
+                ir = - cix[d];
+                jr = j - ciy[d];
                 if(cix[d] == 1) {
                     fiprop[0][j][d] = fi[0][j][index_map[d]];
+                }
+                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && cix[d] != 1) {
+                    fiprop[0][j][d] = fi[ir][jr][d];
                 }
             }
 
         /*Streaming east side*/
         for(int j = 0; j < Ny; ++j)
             for(int d = 0; d < Nd; ++d) {
+                int ir, jr;
+                ir = Nx - 1 - cix[d];
+                jr = j - ciy[d];
                 if(cix[d] == -1) {
                     fiprop[Nx-1][j][d] = fi[Nx-1][j][index_map[d]];
+                }
+                if(ir > -1 && ir < Nx && jr > -1 && jr < Ny && cix[d] != 1) {
+                    fiprop[Nx-1][j][d] = fi[ir][jr][d];
                 }
             }
 
