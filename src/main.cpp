@@ -169,15 +169,12 @@ int main(int argc, char* argv[])
             for(int j = 1; j < Ny - 1; ++j) {
                 bool is_fluid = solid_flags[i][j] == false;
                 if(is_fluid) {
-                    fiprop[i][j][0] = fi[i][j][0];
-                    fiprop[i][j][1] = fi[i-1][j][1];
-                    fiprop[i][j][2] = fi[i][j-1][2];
-                    fiprop[i][j][3] = fi[i+1][j][3];
-                    fiprop[i][j][4] = fi[i][j+1][4];
-                    fiprop[i][j][5] = fi[i-1][j-1][5];
-                    fiprop[i][j][6] = fi[i+1][j-1][6];
-                    fiprop[i][j][7] = fi[i+1][j+1][7];
-                    fiprop[i][j][8] = fi[i-1][j+1][8];
+                    for(int d = 0; d < Nd; ++d) {
+                        int ir, jr;
+                        ir = i - cix[d];
+                        jr = j - ciy[d];
+                        fiprop[i][j][d] = fi[ir][jr][d];
+                    }
                 }
             }
 
